@@ -1,0 +1,30 @@
+-- Function: public.trigger()
+
+-- DROP FUNCTION public.trigger();
+
+CREATE OR REPLACE FUNCTION public.trigger()
+  RETURNS trigger AS
+$BODY$
+   BEGIN
+   IF(EXISTS(SELECT P.IdProducenta FROM Producent P 
+              INNER JOIN Samochód S ON S.IdProducenta=P.IdProducenta
+                WHERE P.IdProducenta=OLD.IdProducenta))
+      THEN
+RAISE EXCEPTION 'Nie mozna usunac Producenta'; 
+END IF;
+   END;
+ $BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.trigger()
+  OWNER TO postgres;
+
+  -- Trigger: trigger on public.producent
+
+-- DROP TRIGGER trigger ON public.producent;
+
+CREATE TRIGGER trigger
+  BEFORE DELETE
+  ON public.producent
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.trigger();
